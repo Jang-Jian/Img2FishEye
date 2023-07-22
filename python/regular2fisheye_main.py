@@ -1,13 +1,18 @@
 import cv2, time
 import interface
+import annotation
 
 
 if __name__ == "__main__":
+    xml_path = '../test/2_77_00.mp4_00001.xml'
     image_path = "../test/2_77_00.mp4_00001.jpg"
     k1 = 0.0000007
     k2 = 0.00000000005
     k3 = 0.7
     angle = 0.0
+
+    import os
+    print(os.path.exists(xml_path))
 
     src_ndarray = cv2.imread(image_path)
     h, w, c = src_ndarray.shape
@@ -24,6 +29,14 @@ if __name__ == "__main__":
     print("regular2fisheye time:", c - b)
     print("tensor2nd time:", d - c)
     print("total time:", d - a)
+
+
+    
+    ground_truths = annotation.fisheye_transform_xml(xml_path, src_ndarray.shape[:2])
+
+    for index in range(len(ground_truths)):
+        x_min, y_min, x_max, y_max, name = ground_truths[index]
+        cv2.rectangle(dst_ndarray[:, :, :, 0], (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
     
     print(dst_ndarray.shape)
     cv2.imshow("dst_ndarray", dst_ndarray[:, :, :, 0])

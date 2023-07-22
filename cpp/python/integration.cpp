@@ -16,6 +16,8 @@ BOOST_PYTHON_MODULE(integration)
     def("nd2tensorImple", nd2tensorImple);
     def("tensor2ndImple", tensor2ndImple);
     def("regular2fisheye", regular2fisheye);
+    def("cvtptrl2fe", cvtptrl2fe);
+
     
 
     enum_<ndshape>("ndshape")
@@ -27,6 +29,12 @@ BOOST_PYTHON_MODULE(integration)
     enum_<dtype>("dtype")
         .value("UINT8", UINT8)
         .value("FLOAT32", FLOAT32);
+
+
+    class_<Point>("Point", init<>())
+        .def_readwrite("x", &Point::x)
+        .def_readwrite("y", &Point::y);
+
 
     class_<Tensor>("Tensor", init<>())
         .def("create", &Tensor::create)

@@ -1,12 +1,12 @@
 #ifndef __lenproc_cpp__
 #define __lenproc_cpp__
 
-#include <cmath>
 #include <omp.h>
 #include <cstdint>
 #include <iostream>
 
 #include "lenproc.hpp"
+#include "leninliner.hpp"
 #include "../container/teproc.hpp"
 
 using namespace std;
@@ -58,7 +58,6 @@ void remap(const Tensor &src, const Tensor &map_x, const Tensor &map_y, Tensor &
                 const float x = map_x_ptr[map_index];
                 const float y = map_y_ptr[map_index];
 
-
                 uint8_t val = bilinearInterHost(src_ptr, x, y, c, 0,
                                                 height, width, channel);
 
@@ -67,6 +66,68 @@ void remap(const Tensor &src, const Tensor &map_x, const Tensor &map_y, Tensor &
         }
     }
 }
+
+
+Point cvtptrl2fe(const int src_x, const int src_y,
+                 const int map_width, const int map_height, const float radian,
+                 const float k1, const float k2, const float k3)
+{
+    Point dst = {};
+
+    const int center_x = static_cast<int>(map_width / 2);
+    const int center_y = static_cast<int>(map_height / 2);
+
+    Tensor map_x, map_y;
+    map_x.create(map_height, map_width, 1, 1, FLOAT32);
+    map_y.create(map_height, map_width, 1, 1, FLOAT32);
+    float *map_x_ptr = (float*)map_x.getPtr();
+    float *map_y_ptr = (float*)map_y.getPtr();
+
+    #pragma omp parallel for
+    for (int y = 0; y < map_height; ++y)
+    {
+        for (int x = 0; x < map_width; ++x)
+        {
+            int map_index = x + y * map_width;
+
+            pt4rl2fe(x, y, map_x_ptr[map_index], map_y_ptr[map_index],
+                     center_x, center_y, radian, k1, k2, k3);
+        }
+    }
+
+
+    float smallest_dist = 9999999999.0f;
+    //float x_tmp = 0.0, y_tmp = 0.0;
+
+    for (int y = 0; y < map_height; ++y)
+    {
+        for (int x = 0; x < map_width; ++x)
+        {
+            int map_index = x + y * map_width;
+            float map_x_val = map_x_ptr[map_index];
+            float map_y_val = map_y_ptr[map_index];
+
+            if (map_x_val >= 0 && map_x_val < map_width && 
+                map_y_val >= 0 && map_y_val < map_height)
+            {
+                float dist = sqrtf(powf(map_x_val - src_x, 2) + powf(map_y_val - src_y, 2));
+                if (dist < smallest_dist)
+                {
+                    smallest_dist = dist;
+                    dst.x = x;
+                    dst.y = y;
+                    //x_tmp = map_x_val;
+                    //y_tmp = map_y_val;
+                }
+            }
+        }
+    }
+
+    //cout << smallest_dist << ", " << x_tmp << ", " << y_tmp << endl;
+
+    return dst;
+}
+
 
 void regular2fisheye(const Tensor &src, Tensor &dst, 
                      const float angle, const float k1, const float k2, const float k3)
@@ -84,7 +145,6 @@ void regular2fisheye(const Tensor &src, Tensor &dst,
     float *map_y_ptr = (float*)map_y.getPtr();
 
     const float radian = angle * M_PI / 180.0f;
-    //const int radius = (center_x >= center_y) ? center_y : center_x;
 
     // get x & y mapping matrix.
     #pragma omp parallel for
@@ -92,16 +152,10 @@ void regular2fisheye(const Tensor &src, Tensor &dst,
     {
         for (int x = 0; x < width; ++x)
         {
-            float theta = atan2f(y - center_y, x - center_x);
-            float radius = sqrtf(powf(x - center_x, 2) + powf(y - center_y, 2));
-            float radius_d = (k1 * powf(radius, 3) + k2 * powf(radius, 2) + k3 * radius);
+            int map_index = x + y * width;
 
-            //cout << theta << ", " << radius << ", " << radius_d << ", " << radian << endl;
-
-            int index = x + y * width;
-
-            map_x_ptr[index] = center_x + radius_d * cosf(theta - radian);
-            map_y_ptr[index] = center_y + radius_d * sinf(theta - radian);
+            pt4rl2fe(x, y, map_x_ptr[map_index], map_y_ptr[map_index],
+                     center_x, center_y, radian, k1, k2, k3);
         }
     }
 

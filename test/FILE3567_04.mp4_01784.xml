@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotation>
+  <object>
+    <filename>All/FILE3567_04.mp4/FILE3567_04.mp4_01784.jpg</filename>
+    <name>vehicle</name>
+    <bndbox>
+      <xmin>1426</xmin>
+      <ymin>603</ymin>
+      <xmax>1596</xmax>
+      <ymax>715</ymax>
+    </bndbox>
+  </object>
+  <object>
+    <filename>All/FILE3567_04.mp4/FILE3567_04.mp4_01784.jpg</filename>
+    <name>vehicle</name>
+    <bndbox>
+      <xmin>1650</xmin>
+      <ymin>609</ymin>
+      <xmax>1798</xmax>
+      <ymax>687</ymax>
+    </bndbox>
+  </object>
+  <object>
+    <filename>All/FILE3567_04.mp4/FILE3567_04.mp4_01784.jpg</filename>
+    <name>vehicle</name>
+    <bndbox>
+      <xmin>1846</xmin>
+      <ymin>594</ymin>
+      <xmax>1920</xmax>
+      <ymax>724</ymax>
+    </bndbox>
+  </object>
+  <object>
+    <filename>All/FILE3567_04.mp4/FILE3567_04.mp4_01784.jpg</filename>
+    <name>vehicle</name>
+    <bndbox>
+      <xmin>1204</xmin>
+      <ymin>613</ymin>
+      <xmax>1380</xmax>
+      <ymax>725</ymax>
+    </bndbox>
+  </object>
+</annotation>
