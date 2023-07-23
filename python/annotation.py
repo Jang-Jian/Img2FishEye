@@ -14,10 +14,10 @@ def fisheye_transform_bbox(x_min, y_min, x_max, y_max, image_shape,
     #print(image_shape[1], image_shape[0])
     #print(center_x, center_y)
     
-    k1 = 0.0000007
-    k2 = 0.00000000005
-    k3 = 0.7
-    angle = 0.0
+    #k1 = 0.0000007
+    #k2 = 0.00000000005
+    #k3 = 0.7
+    #angle = 0.0
 
     #print(x_min, y_min)
     x_transformed, y_transformed = interface.cvtptrl2fe(x_min, y_min, image_shape[1], image_shape[0], angle, k1, k2, k3)
