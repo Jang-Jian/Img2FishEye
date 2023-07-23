@@ -36,7 +36,9 @@ def fisheye_transform_bbox(x_min, y_min, x_max, y_max, image_shape,
     return x_min_transformed, y_min_transformed, x_max_transformed, y_max_transformed
 
 
-def fisheye_transform_xml(xml_path, image_shape):
+def fisheye_transform_xml(xml_path, image_shape,
+                          angle: float = 0.0, k1: float = 0.0000007, 
+                          k2: float = 0.00000000005, k3: float = 0.7):
     # 讀取 XML 標記檔案
     tree = ET.parse(xml_path)
     root = tree.getroot()
@@ -57,7 +59,8 @@ def fisheye_transform_xml(xml_path, image_shape):
         y_max = int(bndbox.find('ymax').text)
 
         # 執行魚眼轉換
-        x_min, y_min, x_max, y_max = fisheye_transform_bbox(x_min, y_min, x_max, y_max, image_shape)
+        x_min, y_min, x_max, y_max = fisheye_transform_bbox(x_min, y_min, x_max, y_max, image_shape,
+                                                            angle, k1, k2, k3)
 
         # 更新標記框座標
         #bndbox.find('xmin').text = str(x_min)

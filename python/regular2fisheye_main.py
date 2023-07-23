@@ -4,8 +4,8 @@ import annotation
 
 
 if __name__ == "__main__":
-    xml_path = '../test/2_77_00.mp4_00001.xml'
-    image_path = "../test/2_77_00.mp4_00001.jpg"
+    xml_path = '../test/FILE2654_04.mp4_00003.xml'
+    image_path = "../test/FILE2654_04.mp4_00003.jpg"
     k1 = 0.0000007
     k2 = 0.00000000005
     k3 = 0.7
@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
 
     
-    ground_truths = annotation.fisheye_transform_xml(xml_path, src_ndarray.shape[:2])
+    ground_truths = annotation.fisheye_transform_xml(xml_path, src_ndarray.shape, angle, k1, k2, k3)
 
     for index in range(len(ground_truths)):
         x_min, y_min, x_max, y_max, name = ground_truths[index]
