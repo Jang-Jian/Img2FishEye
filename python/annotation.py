@@ -52,11 +52,13 @@ def fisheye_transform_xml(xml_path, image_shape,
     ground_truths = []
     for obj in root.findall('object'):
         bndbox = obj.find('bndbox')
-        name = obj.find('name')
+        name = str(obj.find('name').text)
         x_min = int(bndbox.find('xmin').text)
         y_min = int(bndbox.find('ymin').text)
         x_max = int(bndbox.find('xmax').text)
         y_max = int(bndbox.find('ymax').text)
+
+        print(name)
 
         # 執行魚眼轉換
         x_min, y_min, x_max, y_max = fisheye_transform_bbox(x_min, y_min, x_max, y_max, image_shape,

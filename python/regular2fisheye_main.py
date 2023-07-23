@@ -4,8 +4,8 @@ import annotation
 
 
 if __name__ == "__main__":
-    xml_path = '../test/FILE2654_04.mp4_00003.xml'
-    image_path = "../test/FILE2654_04.mp4_00003.jpg"
+    xml_path = '../test/2_78_02.mp4_00001.xml'
+    image_path = "../test/2_78_02.mp4_00001.jpg"
     k1 = 0.0000007
     k2 = 0.00000000005
     k3 = 0.7
