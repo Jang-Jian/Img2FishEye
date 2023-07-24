@@ -16,7 +16,7 @@ BOOST_PYTHON_MODULE(integration)
     def("nd2tensorImple", nd2tensorImple);
     def("tensor2ndImple", tensor2ndImple);
     def("regular2fisheye", regular2fisheye);
-    def("cvtptrl2fe", cvtptrl2fe);
+    //def("cvtptrl2fe", cvtptrl2fe);
 
     
 
@@ -35,6 +35,8 @@ BOOST_PYTHON_MODULE(integration)
         .def_readwrite("x", &Point::x)
         .def_readwrite("y", &Point::y);
 
+    class_<Cvtptrl2fe>("Cvtptrl2fe", init<int, int, float, float, float, float>())
+        .def("transform", &Cvtptrl2fe::transform);
 
     class_<Tensor>("Tensor", init<>())
         .def("create", &Tensor::create)

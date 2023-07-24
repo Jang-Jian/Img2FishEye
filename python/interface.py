@@ -11,6 +11,7 @@ CHWN = integration.ndshape.CHWN
 NCHW = integration.ndshape.NCHW
 NHWC = integration.ndshape.NHWC
 Tensor = integration.Tensor
+Cvtptrl2fe = integration.Cvtptrl2fe
 
 
 def __get4DHWCN(org_shape: tuple,  ndshape_type: integration.ndshape) -> tuple:
@@ -95,16 +96,6 @@ def tensor2nd(src: integration.Tensor,
                                    ndshape_type, FLOAT32)
 
     return dst
-
-
-def cvtptrl2fe(src_x: int, src_y: int, map_width: int, map_height: int, 
-               angle: float = 0.0, k1: float = 0.0000007, 
-               k2: float = 0.00000000005, k3: float = 0.7) -> tuple:
-    radian = angle * math.pi / 180.0
-    #print(src_x, src_y, center_x, center_y, radian, k1, k2, k3)
-    point = integration.cvtptrl2fe(src_x, src_y, map_width, map_height, 
-                                   radian, k1, k2, k3)
-    return (point.x, point.y)
 
 
 def regular2fisheye(src: integration.Tensor, angle: float = 0.0, 

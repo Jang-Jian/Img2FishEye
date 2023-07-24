@@ -4,12 +4,14 @@ import annotation
 
 
 if __name__ == "__main__":
-    xml_path = '../test/2_78_02.mp4_00001.xml'
-    image_path = "../test/2_78_02.mp4_00001.jpg"
+    xml_path = '../test/FILE3567_04.mp4_01716.xml'
+    image_path = "../test/FILE3567_04.mp4_01716.jpg"
     k1 = 0.0000007
     k2 = 0.00000000005
     k3 = 0.7
     angle = 0.0
+    map_width = 1920
+    map_height = 1080
 
     import os
     print(os.path.exists(xml_path))
@@ -31,8 +33,15 @@ if __name__ == "__main__":
     print("total time:", d - a)
 
 
-    
-    ground_truths = annotation.fisheye_transform_xml(xml_path, src_ndarray.shape, angle, k1, k2, k3)
+    e = time.time()
+    fisheye_coord_transform = annotation.Regular2Fisheye(map_width, map_height, angle, k1, k2, k3)
+    f = time.time()
+    ground_truths = fisheye_coord_transform.transform_xml(xml_path)
+    g = time.time()
+
+    print("transform regular coordinates to fisheye coordinates (initialization):", f - e)
+    print("transform regular coordinates to fisheye coordinates (execution):", g - f)
+
 
     for index in range(len(ground_truths)):
         x_min, y_min, x_max, y_max, name = ground_truths[index]

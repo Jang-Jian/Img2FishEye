@@ -32,6 +32,87 @@ inline uint8_t bilinearInterHost(const uint8_t *src, const float x, const float 
 }
 
 
+Cvtptrl2fe::Cvtptrl2fe(const int map_width, const int map_height, const float angle,
+                       const float k1, const float k2, const float k3) : 
+                       map_width(map_width), map_height(map_height)
+{
+    this->center_x = static_cast<int>(map_width / 2);
+    this->center_y = static_cast<int>(map_height / 2);
+    const float radian = angle * M_PI / 180.0f;
+
+    Tensor map_x, map_y;
+    map_x.create(map_height, map_width, 1, 1, FLOAT32);
+    map_y.create(map_height, map_width, 1, 1, FLOAT32);
+    float *map_x_ptr = (float*)map_x.getPtr();
+    float *map_y_ptr = (float*)map_y.getPtr();
+
+    #pragma omp parallel for
+    for (int y = 0; y < map_height; ++y)
+    {
+        for (int x = 0; x < map_width; ++x)
+        {
+            int map_index = x + y * map_width;
+
+            pt4rl2fe(x, y, map_x_ptr[map_index], map_y_ptr[map_index],
+                     center_x, center_y, radian, k1, k2, k3);
+        }
+    }
+
+    for (int y = 0; y < map_height; ++y)
+    {
+        for (int x = 0; x < map_width; ++x)
+        {
+            int map_index = x + y * map_width;
+            float map_x_val = map_x_ptr[map_index];
+            float map_y_val = map_y_ptr[map_index];
+
+            if (map_x_val >= 0 && map_x_val < map_width &&
+                map_y_val >= 0 && map_y_val < map_height)
+            {
+                this->normal_fe_x.push_back(map_x_val);
+                this->normal_fe_y.push_back(map_y_val);
+                this->normal_indexes.push_back(map_index);
+            }
+        }
+    }
+}
+
+Cvtptrl2fe::~Cvtptrl2fe() {  }
+
+Point Cvtptrl2fe::transform(const int src_x, const int src_y)
+{
+    Point dst = {};
+
+    float smallest_dist = 9999999999.0f;
+    int smallest_index = -1;
+    //float x_tmp = 0.0, y_tmp = 0.0;
+    int normal_size = static_cast<int>(this->normal_fe_y.size());
+
+    for (int index = 0; index < normal_size; ++index)
+    {
+        float map_x_val = this->normal_fe_x[index];
+        float map_y_val = this->normal_fe_y[index];
+
+        float dist = sqrtf(powf(map_x_val - src_x, 2) + powf(map_y_val - src_y, 2));
+        if (dist < smallest_dist)
+        {
+            smallest_dist = dist;
+            smallest_index = this->normal_indexes[index];
+        }
+    }
+
+    dst.x = smallest_index % this->map_width;
+    smallest_index = smallest_index / this->map_width;
+
+    dst.y = smallest_index % this->map_height;
+    smallest_index = smallest_index / this->map_height;
+
+    //cout << smallest_dist << ", " << x_tmp << ", " << y_tmp << endl;
+
+    return dst;
+}
+
+
 void remap(const Tensor &src, const Tensor &map_x, const Tensor &map_y, Tensor &dst)
 {
     if (src.getDtype() != UINT8) return;
@@ -65,67 +146,6 @@ void remap(const Tensor &src, const Tensor &map_x, const Tensor &map_y, Tensor &
             }
         }
     }
-}
-
-
-Point cvtptrl2fe(const int src_x, const int src_y,
-                 const int map_width, const int map_height, const float radian,
-                 const float k1, const float k2, const float k3)
-{
-    Point dst = {};
-
-    const int center_x = static_cast<int>(map_width / 2);
-    const int center_y = static_cast<int>(map_height / 2);
-
-    Tensor map_x, map_y;
-    map_x.create(map_height, map_width, 1, 1, FLOAT32);
-    map_y.create(map_height, map_width, 1, 1, FLOAT32);
-    float *map_x_ptr = (float*)map_x.getPtr();
-    float *map_y_ptr = (float*)map_y.getPtr();
-
-    #pragma omp parallel for
-    for (int y = 0; y < map_height; ++y)
-    {
-        for (int x = 0; x < map_width; ++x)
-        {
-            int map_index = x + y * map_width;
-
-            pt4rl2fe(x, y, map_x_ptr[map_index], map_y_ptr[map_index],
-                     center_x, center_y, radian, k1, k2, k3);
-        }
-    }
-
-
-    float smallest_dist = 9999999999.0f;
-    //float x_tmp = 0.0, y_tmp = 0.0;
-
-    for (int y = 0; y < map_height; ++y)
-    {
-        for (int x = 0; x < map_width; ++x)
-        {
-            int map_index = x + y * map_width;
-            float map_x_val = map_x_ptr[map_index];
-            float map_y_val = map_y_ptr[map_index];
-
-            if (map_x_val >= 0 && map_x_val < map_width && 
-                map_y_val >= 0 && map_y_val < map_height)
-            {
-                float dist = sqrtf(powf(map_x_val - src_x, 2) + powf(map_y_val - src_y, 2));
-                if (dist < smallest_dist)
-                {
-                    smallest_dist = dist;
-                    dst.x = x;
-                    dst.y = y;
-                    //x_tmp = map_x_val;
-                    //y_tmp = map_y_val;
-                }
-            }
-        }
-    }
-
-    //cout << smallest_dist << ", " << x_tmp << ", " << y_tmp << endl;
-
-    return dst;
 }
 
 
