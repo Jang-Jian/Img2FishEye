@@ -96,13 +96,3 @@ def tensor2nd(src: integration.Tensor,
                                    ndshape_type, FLOAT32)
 
     return dst
-
-
-def regular2fisheye(src: integration.Tensor, angle: float = 0.0, 
-                    k1: float = 0.0000007, k2: float = 0.00000000005, k3: float = 0.7) -> integration.Tensor:
-    """
-    tranform regular 2d image to fisheye image.
-    """
-    dst = integration.Tensor()
-    integration.regular2fisheye(src, dst, angle, k1, k2, k3)
-    return dst

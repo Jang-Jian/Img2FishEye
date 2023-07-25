@@ -1,3 +1,4 @@
+import numpy as np
 import xml.etree.ElementTree as ET
 import interface
 
@@ -32,13 +33,13 @@ class Regular2Fisheye():
             #print(name)
 
             # 執行魚眼轉換
-            xy_min = self.cvtptrl2fe.transform(x_min, y_min)
+            xy_min = self.cvtptrl2fe.cvtCoord(x_min, y_min)
             x_min = int(max(0, xy_min.x))
             y_min = int(max(0, xy_min.y))
             #print(x_min_transformed, y_min_transformed)
 
             #print(x_max, y_max)
-            xy_max = self.cvtptrl2fe.transform(x_max, y_max)
+            xy_max = self.cvtptrl2fe.cvtCoord(x_max, y_max)
             x_max = int(min(self.map_width, xy_max.x))
             y_max = int(min(self.map_height, xy_max.y))
 
@@ -50,3 +51,10 @@ class Regular2Fisheye():
             ground_truths.append((x_min, y_min, x_max, y_max, name))
 
         return ground_truths
+    
+    def transform_img(self, src_ndarray: np.ndarray) -> np.ndarray:
+        src_tensor = interface.nd2tensor(src_ndarray, interface.HWCN)
+        dst_tensor = interface.Tensor()
+        self.cvtptrl2fe.cvtImage(src_tensor, dst_tensor)
+        dst_ndarray = interface.tensor2nd(dst_tensor, interface.HWCN)
+        return dst_ndarray[:, :, :, 0]

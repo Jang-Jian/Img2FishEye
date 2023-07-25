@@ -40,7 +40,7 @@ Cvtptrl2fe::Cvtptrl2fe(const int map_width, const int map_height, const float an
     this->center_y = static_cast<int>(map_height / 2);
     const float radian = angle * M_PI / 180.0f;
 
-    Tensor map_x, map_y;
+    
     map_x.create(map_height, map_width, 1, 1, FLOAT32);
     map_y.create(map_height, map_width, 1, 1, FLOAT32);
     float *map_x_ptr = (float*)map_x.getPtr();
@@ -79,7 +79,7 @@ Cvtptrl2fe::Cvtptrl2fe(const int map_width, const int map_height, const float an
 
 Cvtptrl2fe::~Cvtptrl2fe() {  }
 
-Point Cvtptrl2fe::transform(const int src_x, const int src_y)
+Point Cvtptrl2fe::cvtCoord(const int src_x, const int src_y)
 {
     Point dst = {};
 
@@ -110,6 +110,11 @@ Point Cvtptrl2fe::transform(const int src_x, const int src_y)
     //cout << smallest_dist << ", " << x_tmp << ", " << y_tmp << endl;
 
     return dst;
+}
+
+void Cvtptrl2fe::cvtImage(const Tensor &src, Tensor &dst)
+{
+    remap(src, map_x, map_y, dst);
 }
 
 
@@ -146,40 +151,6 @@ void remap(const Tensor &src, const Tensor &map_x, const Tensor &map_y, Tensor &
             }
         }
     }
-}
-
-
-void regular2fisheye(const Tensor &src, Tensor &dst, 
-                     const float angle, const float k1, const float k2, const float k3)
-{
-    const int width = src.getWidth();
-    const int height = src.getHeight();
-
-    const int center_x = static_cast<int>(width / 2);
-    const int center_y = static_cast<int>(height / 2);
-
-    Tensor map_x, map_y;
-    map_x.create(height, width, 1, 1, FLOAT32);
-    map_y.create(height, width, 1, 1, FLOAT32);
-    float *map_x_ptr = (float*)map_x.getPtr();
-    float *map_y_ptr = (float*)map_y.getPtr();
-
-    const float radian = angle * M_PI / 180.0f;
-
-    // get x & y mapping matrix.
-    #pragma omp parallel for
-    for (int y = 0; y < height; ++y)
-    {
-        for (int x = 0; x < width; ++x)
-        {
-            int map_index = x + y * width;
-
-            pt4rl2fe(x, y, map_x_ptr[map_index], map_y_ptr[map_index],
-                     center_x, center_y, radian, k1, k2, k3);
-        }
-    }
-
-    remap(src, map_x, map_y, dst);
 }
 
 #endif
