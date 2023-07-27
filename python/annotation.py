@@ -10,6 +10,9 @@ class Regular2Fisheye():
         self.cvtptrl2fe = interface.Cvtptrl2fe(map_width, map_height, angle, k1, k2, k3)
         self.map_width = map_width
         self.map_height = map_height
+        self.k1 = k1 
+        self.k2 = k2 
+        self.k3 = k3
 
     def transform_xml(self, xml_path: str) -> list:
         tree = ET.parse(xml_path)
@@ -33,15 +36,16 @@ class Regular2Fisheye():
             #print(name)
 
             # 執行魚眼轉換
-            xy_min = self.cvtptrl2fe.cvtCoord(x_min, y_min)
-            x_min = int(max(0, xy_min.x))
-            y_min = int(max(0, xy_min.y))
-            #print(x_min_transformed, y_min_transformed)
+            if self.k1 > 0 and self.k2 > 0 and self.k3 > 0:
+                xy_min = self.cvtptrl2fe.cvtCoord(x_min, y_min)
+                x_min = int(max(0, xy_min.x))
+                y_min = int(max(0, xy_min.y))
+                #print(x_min_transformed, y_min_transformed)
 
-            #print(x_max, y_max)
-            xy_max = self.cvtptrl2fe.cvtCoord(x_max, y_max)
-            x_max = int(min(self.map_width, xy_max.x))
-            y_max = int(min(self.map_height, xy_max.y))
+                #print(x_max, y_max)
+                xy_max = self.cvtptrl2fe.cvtCoord(x_max, y_max)
+                x_max = int(min(self.map_width, xy_max.x))
+                y_max = int(min(self.map_height, xy_max.y))
 
             # 更新標記框座標
             #bndbox.find('xmin').text = str(x_min)
@@ -53,8 +57,10 @@ class Regular2Fisheye():
         return ground_truths
     
     def transform_img(self, src_ndarray: np.ndarray) -> np.ndarray:
-        src_tensor = interface.nd2tensor(src_ndarray, interface.HWCN)
-        dst_tensor = interface.Tensor()
-        self.cvtptrl2fe.cvtImage(src_tensor, dst_tensor)
-        dst_ndarray = interface.tensor2nd(dst_tensor, interface.HWCN)
-        return dst_ndarray[:, :, :, 0]
+        if self.k1 > 0 and self.k2 > 0 and self.k3 > 0:
+            src_tensor = interface.nd2tensor(src_ndarray, interface.HWCN)
+            dst_tensor = interface.Tensor()
+            self.cvtptrl2fe.cvtImage(src_tensor, dst_tensor)
+            dst_ndarray = interface.tensor2nd(dst_tensor, interface.HWCN)
+            return dst_ndarray[:, :, :, 0]
+        return src_ndarray

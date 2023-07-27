@@ -6,10 +6,19 @@ import annotation
 if __name__ == "__main__":
     xml_path = '../test/2_77_00.mp4_00001.xml'
     image_path = "../test/2_77_00.mp4_00001.jpg"
-    k1 = 0.0000007
-    k2 = 0.00000000005
+
+    k1 = 0.0
+    k2 = 0.0
+    k3 = 0.0
+    angle = 0.0
+    """
+    # parameters for transform regular to fisheye.
+    k1 = 0.0000004
+    k2 = 0.0000000005
     k3 = 0.7
     angle = 0.0
+    """
+
     map_width = 1920
     map_height = 1080
 
